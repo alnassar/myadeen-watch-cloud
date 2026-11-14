@@ -103,6 +103,8 @@ def main():
         elif prev is None or prev["left"] != left:
             log(f"update: {info}")
 
+    log("checked: " + ("; ".join(f"{v['name']} {v['dates']} {v['left']}/{v['seats']} left" for v in new_state.values()) or "no Rami Aman course listed"))
+
     for pid in set(state) - set(new_state):
         log(f"removed from site: {state[pid]['name']}")
 
