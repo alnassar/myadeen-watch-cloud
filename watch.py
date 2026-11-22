@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Watch myadeen.com for new "Rami Aman" (رامي امن) courses and open seats.
 
-Cloud copy run by GitHub Actions every 5 minutes. Sends an ntfy phone push
+Cloud copy run by GitHub Actions on a schedule. Sends an ntfy phone push
 when a new matching course appears, or when a course goes from full to having
 seats. State is kept in state.json, committed back to the repo.
 """
@@ -14,7 +14,6 @@ from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STATE = os.path.join(HERE, "state.json")
-LOG = os.path.join(HERE, "watch.log")
 API = "https://myadeen.com/api/products?category_id=5&limit=100&page={}"
 MATCH = "رامي امن"  # course name to watch, normalized
 
@@ -67,11 +66,13 @@ def push_phone(title, text, url):
 
 
 def main():
+    # First run = no state file yet. An empty state file (no Rami Aman course
+    # listed last time) is NOT a first run, so a newly posted course still alerts.
+    first_run = not os.path.exists(STATE)
     state = {}
-    if os.path.exists(STATE):
+    if not first_run:
         with open(STATE, encoding="utf-8") as f:
             state = json.load(f)
-    first_run = not state
 
     try:
         courses = fetch_courses()
